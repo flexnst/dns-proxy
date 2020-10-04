@@ -1,0 +1,27 @@
+{
+  "name": "dns-proxy",
+  "version": "1.0.0",
+  "description": "DNS proxy running on NodeJS. It acts as DNS server running locally, that returns specified fake responses for given particular host names, and passes real responses from upstream DNS server for others transparently byte-to-byte (so, these passed responses can be of any type, not necesarily supported by the application). Currently, the application supports forging responses of type \"A\" (IPv4 address) and \"CNAME\" (canonical name).",
+  "main": "server.js",
+  "directories": {
+    "test": "dns/tests"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "ip": "^1.1.5"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/flexnst/dns-proxy.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/flexnst/dns-proxy/issues"
+  },
+  "homepage": "https://github.com/flexnst/dns-proxy#readme"
+}

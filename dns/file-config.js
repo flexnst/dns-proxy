@@ -3,9 +3,9 @@ const fs = require('fs');
 const functions = require('./functions');
 
 
-const CONFIG_FILE_PATH = path.resolve('./config.json');
+const CONFIG_FILE_PATH = path.resolve('./config/dns.json');
 
-// ToDo on config change, fire custom event that could be processed in index.js
+// ToDo on config change, fire custom event that could be processed in dns-server.js
 // ToDo handle cases when saved config has an error
 
 // ToDo should module export configProvider function by default,
@@ -14,7 +14,7 @@ const CONFIG_FILE_PATH = path.resolve('./config.json');
 
 function Module () {
     // config remains constant object, thus can be assigned safely to outer variable.
-    // Inner config properties are subject to be re-assigned on config.json change,
+    // Inner config properties are subject to be re-assigned on dns.json change,
     // so should be accessed only as config[property].
     // In other words, you can do:
     //      const conf = config;
@@ -31,11 +31,6 @@ function Module () {
 
     this.initConfig = async function() {
         const fileContents = await readConfigFile(CONFIG_FILE_PATH);
-
-        console.log('initConfig:');
-        console.log(fileContents);
-        console.log('fileContents logged ^^ ' + new Date().toUTCString());
-
         const parsedConfigData = parseConfig(fileContents);
 
         if (parsedConfigData.requestsToForge) {

@@ -1,27 +1,9 @@
 const dgram = require('dgram');
 const server = dgram.createSocket('udp4');
-// const tls = require('tls');
 const functions = require('./functions.js');
 const getConfig = require('./file-config');
-const TlsClient = require('./tls-client');
-const EventEmitter = require('events');
 
-
-// ToDo Implement errors handling (try & catch in function body may be not the best approach)
-
-// ToDo Implement check for circular references in readDomainName by "192" compression loops
-
-// ToDo check if compose DNS message with root domain functions properly
-
-// ToDo implement forging requests TTL per host
-
-// ToDo implement IPv6?
-
-// ToDo implement other major DNS types & classes?
-
-// ToDo change question.domainName to qname, for proper semantics
-
-(async function() {
+module.exports = async function(ipAddress) {
 
     const settings = await getConfig();
     const config = settings.config;
@@ -31,19 +13,6 @@ const EventEmitter = require('events');
     const upstreamDnsUdpPort = config.upstreamDnsUdpPort;
     const forgedRequestsTTL = config.forgedRequestsTTL;
 
-    let remoteTlsClient;
-
-    if (config.remoteDnsConnectionMode == "tls") {
-        const options = {
-            port: config.upstreamDnsTlsPort,
-            host: config.upstreamDnsTlsHost
-        }
-
-        const onData = functions.processIncomingDataAndEmitEvent;
-        remoteTlsClient = new TlsClient(options, onData);
-    }
-
-
     server.on('error', (err) => {
       console.log(`server error:\n${err.stack}`);
       server.close();
@@ -52,8 +21,9 @@ const EventEmitter = require('events');
     server.on('message', async (localReq, linfo) => {
         const dnsRequest = functions.parseDnsMessageBytes(localReq);
 
-        // ToDo as multiple questions per query are not supported,
-        // then should then support rejecting such requests, or serve just first question like Google DNS does?
+        // Multiple questions per query are not supported,
+        // then should then support rejecting such requests,
+        // or serve just first question like Google DNS does?
 
         const question = dnsRequest.questions[0];   // currently, only one question per query is supported by DNS implementations
 
@@ -89,7 +59,7 @@ const EventEmitter = require('events');
                             const responseBuf = functions.composeDnsMessageBin(localDnsResponse);
 
                             console.log('response composed for unsupported IPv6: ', localDnsResponse.questions[0]);
-                            server.send(responseBuf, linfo.port, linfo.address, (err, bytes) => {});
+                            server.send(responseBuf, linfo.port, linfo.address);
                             break;
                         case 1:     // type Internet
                         case 5:     // type CNAME
@@ -163,12 +133,9 @@ const EventEmitter = require('events');
 
                     let remoteResponseBuf;
                     try {
-                        if (config.remoteDnsConnectionMode == "udp") {
+                        if (config.remoteDnsConnectionMode === "udp") {
                             const remoteRequestBin = functions.composeDnsMessageBin(remoteRequestFields);
                             remoteResponseBuf = await functions.getRemoteDnsResponseBin(remoteRequestBin, upstreamDnsUdpHost, upstreamDnsUdpPort);
-                        }
-                        else if (config.remoteDnsConnectionMode == "tls") {
-                            remoteResponseBuf = await functions.getRemoteDnsTlsResponseBin(remoteRequestFields, remoteTlsClient);
                         }
                     } catch (error) {
                         console.error(error.message);
@@ -181,16 +148,8 @@ const EventEmitter = require('events');
                 }
 
             } else {
-                // throw exception
-                // throw new Error(
-                //     'For ' + question.domainName + ', should be specified '
-                //     + '\'ip\' either \'cname\' field in config'
-                // );
-                console.warn(
-                    'For ' + question.domainName + ', \'ip\' either \'cname\' field should be specified in config.json'
-                );
-            };
-
+                console.warn('For ' + question.domainName + ', \'ip\' either \'cname\' field should be specified in dns.json');
+            }
 
             const localDnsResponse = {
                 ID: dnsRequest.ID,
@@ -211,32 +170,19 @@ const EventEmitter = require('events');
                 answers: answers
             }
 
-            console.log();
-            console.log('Prepared local DNS response:');
-            console.log(localDnsResponse);
-            console.log();
-
+            localDnsResponse.answers.forEach((answer)=>{
+                console.log(`From ${linfo.address}, Domain: ${answer.domainName}, Resolved ip: ${answer.IPv4}`);
+            });
 
             const responseBuf = functions.composeDnsMessageBin(localDnsResponse);
-
-            console.log('response composed for: ', localDnsResponse.questions[0]);
-            server.send(responseBuf, linfo.port, linfo.address, (err, bytes) => {});
+            server.send(responseBuf, linfo.port, linfo.address);
         }
         else {
 
             try {
-                if (config.remoteDnsConnectionMode == "udp") {
-                    //  transmit binary request and response transparently
+                if (config.remoteDnsConnectionMode === "udp") {
                     const responseBuf = await functions.getRemoteDnsResponseBin(localReq, upstreamDnsUdpHost, upstreamDnsUdpPort);
-                    server.send(responseBuf, linfo.port, linfo.address, (err, bytes) => {
-                        // add some logic, maybe?
-                    });
-                }
-                else if (config.remoteDnsConnectionMode == "tls") {
-                    const responseBuf = await functions.getRemoteDnsTlsResponseBin(dnsRequest, remoteTlsClient);
-                    server.send(responseBuf, linfo.port, linfo.address, (err, bytes) => {
-                        // add some logic, maybe?
-                    });
+                    server.send(responseBuf, linfo.port, linfo.address);
                 }
             } catch (error) {
                 console.error(error.message);
@@ -246,9 +192,7 @@ const EventEmitter = require('events');
 
     server.on('listening', () => {
       const address = server.address();
-      console.log(`server listening ${address.address}:${address.port}`);
+      console.log(`DNS: ${address.address}:${address.port}`);
     });
-
-    server.bind(localDnsPort, 'localhost');
-    // server listening 0.0.0.0:53
-}());
+    server.bind(localDnsPort, ipAddress);
+};
