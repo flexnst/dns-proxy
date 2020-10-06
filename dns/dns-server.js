@@ -3,7 +3,7 @@ const server = dgram.createSocket('udp4');
 const functions = require('./functions.js');
 const getConfig = require('./file-config');
 
-module.exports = async function(ipAddress) {
+module.exports = async function(ipAddress, resolver) {
 
     const settings = await getConfig();
     const config = settings.config;
@@ -29,7 +29,16 @@ module.exports = async function(ipAddress) {
 
         let forgingHostParams = undefined;
 
-        if (!!config.requestsToForge) {  // if requestsToForge section presents in config
+        let resolvedIp = resolver.resolve(linfo.address, question.domainName);
+        if (resolvedIp) {
+            forgingHostParams = {
+                hostName: question.domainName,
+                ip: resolvedIp,
+                cname: null
+            }
+        }
+
+        if (!!config.requestsToForge && !resolvedIp) {  // if requestsToForge section presents in config
             for (let i = 0; i < config.requestsToForge.length; i++) {
                 const requestToForge = config.requestsToForge[i];
                 const targetDomainNamePattern = requestToForge.hostNamePattern;
