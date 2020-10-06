@@ -6,3 +6,4 @@
 *.pdf
 *.7z
 web/public
+config/domains.json
