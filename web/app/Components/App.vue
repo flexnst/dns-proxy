@@ -1,96 +1,96 @@
 <template>
   <div>
-    <div class="container">
-      <div v-if="loading">
-        Loading...
-      </div>
-      <div v-if="loading===null">
-        Error...
-      </div>
-      <div v-else>
-        <h2>DNS Proxy</h2>
-        <p>
-          Add DNS ip firstly to your network connection: <b>{{ config.server_ip }}</b>
-        </p>
-        <h4>Your ip: {{ config.client_ip }} </h4>
+    <div v-if="loaded">
+      <Header class="hide-on-large-only" :ip="config.client_ip" :tabs="tabs" :current-tab="currentTab"
+              @select="tabChange"/>
+      <div class="container">
+        <Header class="hide-on-med-and-down" :ip="config.client_ip" :tabs="tabs" :current-tab="currentTab"
+                @select="tabChange"/>
 
-        <table v-if="config.domains.length" border="0" cellpadding="5" cellspacing="0" width="100%">
-          <thead>
-          <tr>
-            <th align="left">Domain</th>
-            <th align="left">Target IP</th>
-            <th align="left"></th>
-          </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(domain, i) in config.domains">
-              <td>
-                <input type="text" :name="'domains['+i+'][name]'" minlength="3" maxlength="64" v-model="config.domains[i].name" placeholder="example.local.dev"/>
-              </td>
-              <td>
-                <input type="text" :name="'domains['+i+'][ip]'" minlength="7" maxlength="15" v-model="config.domains[i].ip" placeholder="192.168.0.101"/>
-              </td>
-              <td>
-                <button type="button" v-if="config.domains.length" @click="remove(i)">Remove</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div v-show="currentTab.name === 'domain-list'">
+          <domain-list :ip="config.client_ip" :domains="config.domains" @edit="edit"/>
+          <div class="fixed-action-btn">
+            <a class="btn-floating btn-large red" @click="add()">
+              <i class="large material-icons">add</i>
+            </a>
+          </div>
+        </div>
 
-        <button type="button" @click="add()">Add domain</button>
-        <button type="button" @click="save()">Save changes</button>
+        <div v-if="currentTab.name === 'domain-add'">
+          <domain-edit :add="true" @back="showList"/>
+        </div>
+
+        <div v-if="currentTab.name === 'domain-edit'">
+          <domain-edit :domain="domain" @back="showList"/>
+        </div>
+
+        <div v-if="currentTab.name === 'how-it-works'">
+          <Info :config="config"/>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import Header from "./Header";
+import DomainList from "./Domains/DomainList";
+import DomainEdit from "./Domains/DomainEdit";
+import Info from "./Info";
+
 export default {
   name: 'app',
+  components: {Header, DomainList, DomainEdit, Info},
   data() {
     return {
-      loading: true,
+      loaded: false,
       config: {
         server_ip: null,
         client_ip: null,
         domains: []
-      }
+      },
+      domain: {},
+      tab: 'domain-list',
+      tabs: [
+        {title: 'Domains', name: 'domain-list', icon: 'playlist_add', show: true},
+        {title: 'How it works', name: 'how-it-works', icon: 'info', show: true},
+        {title: 'Add Domain', name: 'domain-add', show: false},
+        {title: 'Edit Domain', name: 'domain-edit', show: false},
+      ]
     }
   },
   created() {
-    http.get('/config')
-      .then((res)=>{
-         this.loading = false;
-         this.$set(this, 'config', res.data)
-      })
-      .catch((err) => {
-          this.loading = null;
-      })
+    this.loadConfig();
+    M.FloatingActionButton.init(document.querySelectorAll('.fixed-action-btn'));
+  },
+  computed: {
+    currentTab() {
+      return this.tabs.filter((tab) => {
+        return tab.name === this.tab;
+      })[0] || null;
+    }
   },
   methods: {
-    add(){
-      this.config.domains.push({
-        name: '',
-        ip: '',
-      });
+    loadConfig() {
+      http.get('/config')
+          .then((res) => {
+            this.loaded = true;
+            this.$set(this, 'config', res.data)
+          });
     },
-    remove(i){
-      this.config.domains.splice(i, 1);
+    add() {
+      this.tab = 'domain-add';
     },
-    save(){
-      // const data = new FormData();
-      // this.config.domains.forEach((domain, i)=>{
-      //   data.append(`name[${i}]`, domain);
-      //   data.append(`ip[${i}]`, domain);
-      // });
-
-      http.post('/save', this.config.domains)
-        .then((res) => {
-          console.log(res);
-        })
-        .catch((err) => {
-          console.error(err);
-        })
+    showList() {
+      this.tab = 'domain-list';
+      this.loadConfig();
+    },
+    edit(domain) {
+      this.tab = 'domain-edit';
+      this.domain = domain;
+    },
+    tabChange(tab) {
+      this.tab = tab;
     }
   }
 }

@@ -1,0 +1,22 @@
+.loader-start {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.hide-on-med-and-down .brand-logo {
+  margin-left: 20px;
+}
+
+.tabs-transparent .tab {
+  &:first-child {
+    margin-left: 1em;
+  }
+
+  margin-right: 1em;
+}
+
+.no-margin-b {
+  margin-bottom: 0 !important;
+}

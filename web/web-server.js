@@ -15,12 +15,19 @@ module.exports = async function (ipAddress, resolver){
         });
     });
 
-    app.post('/save', (req, res)=>{
-        let domains = req.body;
-        resolver.removeForClient(req.ip_v4);
-        domains.forEach((domain) => {
-            resolver.add(req.ip_v4, domain.name, domain.ip);
-        });
+    app.post('/save', (req, res) => {
+        let domain = req.body;
+        if (domain.old_name) {
+            resolver.remove(req.ip_v4, domain.old_name);
+        }
+        resolver.add(req.ip_v4, domain.name, domain.ip);
+        resolver.save();
+        res.send('ok');
+    });
+
+    app.post('/delete', (req, res) => {
+        let domain = req.body;
+        resolver.remove(req.ip_v4, domain.name);
         resolver.save();
         res.send('ok');
     });

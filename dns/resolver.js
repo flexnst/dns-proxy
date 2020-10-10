@@ -47,10 +47,6 @@ function Module() {
         delete this.domains[clientIp][domain];
     }
 
-    this.removeForClient = function(clientIp) {
-        delete this.domains[clientIp];
-    }
-
     this.resolve = function(clientIp, domain) {
         try {
             return this.domains[clientIp][domain];
@@ -60,8 +56,6 @@ function Module() {
     }
 
     this.getForClient = function (clientIp) {
-
-
 
         if ( !this.domains.hasOwnProperty(clientIp) ) {
             return [];

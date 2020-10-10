@@ -9,8 +9,8 @@ Forging of IPv6 responses is not supported. If request of type "AAAA" (IPv6) is 
 To start the application, open console in application root directory and run the command:
 
 ```sh
-sudo node server
-
+npm run production
+sudo npm run server
 ```
 
 On PC whose DNS requests should be proxied, set the IP address of PC running DNS Proxy. If this is one and the same PC, set `127.0.0.1`.
