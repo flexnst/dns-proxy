@@ -9,7 +9,7 @@ git clone https://github.com/flexnst/dns-proxy.git
 cd dns-proxy
 npm i
 npm run production
-sudo npm dun server
+sudo npm run server
 ```
 
 After starting server print link to local web UI and DNS-server ip:
