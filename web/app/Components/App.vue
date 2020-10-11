@@ -1,30 +1,30 @@
 <template>
   <div>
     <div v-if="loaded">
-      <Header class="hide-on-large-only" :ip="config.client_ip" :tabs="tabs" :current-tab="currentTab"
-              @select="tabChange"/>
+      <Header id="mobile" class="hide-on-large-only" @tab="setTab"/>
       <div class="container">
-        <Header class="hide-on-med-and-down" :ip="config.client_ip" :tabs="tabs" :current-tab="currentTab"
-                @select="tabChange"/>
+        <Header id="desktop" class="hide-on-med-and-down" @tab="setTab"/>
 
-        <div v-show="currentTab.name === 'domain-list'">
-          <domain-list :ip="config.client_ip" :domains="config.domains" @edit="edit"/>
-          <div class="fixed-action-btn">
-            <a class="btn-floating btn-large red" @click="add()">
-              <i class="large material-icons">add</i>
-            </a>
+        <div v-if="tab === 'domains'" class="col s12">
+          <div v-show="view === 'domain-list'">
+            <domain-list :ip="config.client_ip" :domains="config.domains" @edit="edit"/>
+            <div class="fixed-action-btn">
+              <a class="btn-floating btn-large red" @click="add()">
+                <i class="large material-icons">add</i>
+              </a>
+            </div>
+          </div>
+
+          <div v-show="view === 'domain-add'">
+            <domain-edit :add="true" @back="showList"/>
+          </div>
+
+          <div v-show="view === 'domain-edit'">
+            <domain-edit :domain="domain" @back="showList"/>
           </div>
         </div>
 
-        <div v-if="currentTab.name === 'domain-add'">
-          <domain-edit :add="true" @back="showList"/>
-        </div>
-
-        <div v-if="currentTab.name === 'domain-edit'">
-          <domain-edit :domain="domain" @back="showList"/>
-        </div>
-
-        <div v-if="currentTab.name === 'how-it-works'">
+        <div v-if="tab === 'how-it-works'" class="col s12">
           <Info :config="config"/>
         </div>
       </div>
@@ -50,47 +50,45 @@ export default {
         domains: []
       },
       domain: {},
-      tab: 'domain-list',
-      tabs: [
-        {title: 'Domains', name: 'domain-list', icon: 'playlist_add', show: true},
-        {title: 'How it works', name: 'how-it-works', icon: 'info', show: true},
-        {title: 'Add Domain', name: 'domain-add', show: false},
-        {title: 'Edit Domain', name: 'domain-edit', show: false},
-      ]
+      tab: 'domains',
+      view: 'domain-list',
     }
   },
-  created() {
+  mounted() {
     this.loadConfig();
     M.FloatingActionButton.init(document.querySelectorAll('.fixed-action-btn'));
   },
   computed: {
-    currentTab() {
-      return this.tabs.filter((tab) => {
-        return tab.name === this.tab;
+    activeView() {
+      return this.views.filter((view) => {
+        return view.name === this.view;
       })[0] || null;
     }
   },
   methods: {
+    setTab(tab) {
+      this.tab = tab;
+    },
     loadConfig() {
       http.get('/config')
           .then((res) => {
             this.loaded = true;
-            this.$set(this, 'config', res.data)
+            this.$set(this, 'config', res.data);
           });
     },
     add() {
-      this.tab = 'domain-add';
+      this.view = 'domain-add';
     },
     showList() {
-      this.tab = 'domain-list';
+      this.view = 'domain-list';
       this.loadConfig();
     },
     edit(domain) {
-      this.tab = 'domain-edit';
+      this.view = 'domain-edit';
       this.domain = domain;
     },
-    tabChange(tab) {
-      this.tab = tab;
+    setView(view) {
+      this.view = view;
     }
   }
 }

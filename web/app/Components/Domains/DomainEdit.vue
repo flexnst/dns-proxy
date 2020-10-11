@@ -18,20 +18,34 @@
         </div>
       </form>
     </div>
-    <div class="card-action">
+
+    <div class="card-action hide-on-med-and-down">
       <span class="waves-effect waves-light btn green" @click="save()">
-        <i class="material-icons left">check</i>
+        <i class="material-icons left">check_circle</i>
         Save
       </span>
-      <span v-if="add" class="waves-effect waves-light btn red right" @click="cancel()">
-        <i class="material-icons left">close</i>
-        Cancel
-      </span>
-      <span v-else class="waves-effect waves-light btn red right" @click="remove()">
-        <i class="material-icons left">remove</i>
+      <span v-if="!add" class="waves-effect waves-light btn red" @click="remove()">
+        <i class="material-icons left">delete_forever</i>
         Remove
       </span>
+      <span class="waves-effect waves-light black-text btn white right" @click="cancel()">
+        <i class="material-icons left">arrow_back</i>
+        Cancel
+      </span>
     </div>
+
+    <div class="card-action hide-on-large-only">
+      <span class="waves-effect waves-light btn green" style="width: 100px" @click="save()">
+        <i class="material-icons center">check_circle</i>
+      </span>
+      <span v-if="!add" class="waves-effect waves-light btn red" @click="remove()">
+        <i class="material-icons center">delete_forever</i>
+      </span>
+      <span class="waves-effect waves-light black-text btn white right" @click="cancel()">
+        <i class="material-icons center">arrow_back</i>
+      </span>
+    </div>
+
   </div>
 </template>
 

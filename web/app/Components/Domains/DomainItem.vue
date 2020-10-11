@@ -1,8 +1,14 @@
 <template>
   <div class="card" @click="edit(domain)">
     <div class="card-content">
-      <span class="card-title">{{ domain.name }}</span>
-      <p>{{ domain.ip }}</p>
+      <span class="card-title">
+        <i class="material-icons left">language</i>
+        {{ domain.name }}
+      </span>
+      <p>
+        <i class="material-icons left">subdirectory_arrow_right</i>
+        {{ domain.ip }}
+      </p>
     </div>
   </div>
 </template>

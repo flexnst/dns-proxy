@@ -1,19 +1,25 @@
 <template>
-  <nav class="nav-extended">
+  <nav :id="id" class="nav-extended">
 
     <div class="nav-wrapper">
-      <a href="/" class="brand-logo">
+      <a href="/" class="brand-logo center">
+        <img src="/icons/favicon-32x32.png" alt="Logo" height="26"/>
         Easy DNS
       </a>
     </div>
 
     <div class="nav-content">
       <ul class="tabs tabs-transparent">
-        <li class="tab" v-for="tab in tabs" v-if="tab.show">
-          <a :href="`#${tab.name}`" @click="selectTab(tab.name, $event)"
-             v-bind:class="{active: tab.name === currentTab.name}" :title="tab.title">
-            <i class="material-icons">{{ tab.icon }}</i>
-            <span class="hide-on-med-and-down">{{ tab.title }}</span>
+        <li class="tab">
+          <a @click="tabClick('domains', $event)" href="#" class="active" title="domains">
+            <i class="material-icons">playlist_add</i>
+            <span class="hide-on-med-and-down">Domains</span>
+          </a>
+        </li>
+        <li class="tab">
+          <a @click="tabClick('how-it-works', $event)" href="#" title="How it works?">
+            <i class="material-icons">info</i>
+            <span class="hide-on-med-and-down">How it works?</span>
           </a>
         </li>
       </ul>
@@ -24,28 +30,27 @@
 
 <script>
 export default {
-  name: "Header",
   props: {
-    ip: {
+    id: {
       type: String,
       default: ''
-    },
-    tabs: {
-      type: Array,
-      default: []
-    },
-    currentTab: {
-      type: Object,
-      default: null
     }
   },
+  created() {
+    this.initTabs();
+  },
   methods: {
-    selectTab(tabName, event) {
-      // Disable link hash
-      if (event) {
-        event.preventDefault();
+    initTabs() {
+      let tabs = document.querySelector(`#${this.id} .tabs`);
+      if (!tabs) {
+        setTimeout(this.initTabs, 200);
+        return;
       }
-      this.$emit('select', tabName);
+      M.Tabs.init(tabs);
+    },
+    tabClick(tab, e) {
+      e.preventDefault();
+      this.$emit('tab', tab);
     }
   }
 }
