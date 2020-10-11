@@ -7,10 +7,17 @@ function Module() {
 
     async function load() {
         return new Promise((resolve, reject)=>{
-            fs.readFile(DOMAINS_FILE, { encoding: 'utf8', flag: 'r' }, (err, fileContents) => {
+
+            if (!fs.existsSync(DOMAINS_FILE)) {
+                resolve({});
+                return;
+            }
+
+            fs.readFile(DOMAINS_FILE, {encoding: 'utf8', flag: 'r'}, (err, fileContents) => {
                 if (err) {
                     console.log('Init resolver error.');
                     reject(err);
+                    return;
                 }
                 resolve(JSON.parse(fileContents));
             });
