@@ -8,7 +8,7 @@
     <domain-item v-for="(domain, i) in domains" :key="i" :domain="domain" @edit="edit"/>
     <div v-if="domains.length === 0">
       <h6>Domains not found</h6>
-      <p class="grey-text">Click button at bottom left for add new domain.</p>
+      <p class="grey-text">Click button at bottom right for add new domain.</p>
     </div>
   </div>
 </template>

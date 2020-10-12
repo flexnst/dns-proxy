@@ -12,7 +12,7 @@
       <ul class="tabs tabs-transparent">
         <li class="tab">
           <a @click="tabClick('domains', $event)" href="#" class="active" title="domains">
-            <i class="material-icons">playlist_add</i>
+            <i class="material-icons">storage</i>
             <span class="hide-on-med-and-down">Domains</span>
           </a>
         </li>
