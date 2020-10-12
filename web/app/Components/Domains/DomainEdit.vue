@@ -6,13 +6,13 @@
       <form class="col s12">
         <div class="row">
           <div class="input-field col s12">
-            <input placeholder="example.local.dev" id="name" type="text" class="validate" v-model="editDomain.name">
+            <input placeholder="example.local.dev" id="name" type="text" class="validate" v-model="name">
             <label for="name" class="active">Domain name</label>
           </div>
         </div>
         <div class="row">
           <div class="input-field col s12">
-            <input placeholder="192.168.0.0" id="ip" type="text" class="validate" v-model="editDomain.ip">
+            <input placeholder="192.168.0.0" id="ip" type="text" class="validate" v-model="ip">
             <label for="ip" class="active">Target IP address</label>
           </div>
         </div>
@@ -69,24 +69,39 @@ export default {
   },
   data() {
     return {
-      editDomain: {
-        name: '',
-        ip: ''
+      domainChange: {
+        name: null,
+        ip: null
       }
     };
   },
-  created() {
-    this.editDomain.name = this.domain.name;
-    this.editDomain.ip = this.domain.ip;
+  computed: {
+    name: {
+      get(){
+        return this.domainChange.name || this.domain.name;
+      },
+      set(name){
+        this.domainChange.name = name;
+      }
+    },
+    ip: {
+      get(){
+        return this.domainChange.ip || this.domain.ip;
+      },
+      set(ip){
+        this.domainChange.ip = ip;
+      }
+    }
   },
   methods: {
     save() {
       http.post('/save', {
         old_name: this.domain.name,
-        name: this.editDomain.name,
-        ip: this.editDomain.ip
+        name: this.name,
+        ip: this.ip
       })
           .then((res) => {
+            this.reset();
             this.$emit('back', res);
           })
           .catch((err) => {
@@ -96,6 +111,7 @@ export default {
     remove() {
       http.post('/delete', this.domain)
           .then((res) => {
+            this.reset();
             this.$emit('back', res);
           })
           .catch((err) => {
@@ -103,7 +119,12 @@ export default {
           })
     },
     cancel() {
+      this.reset();
       this.$emit('back');
+    },
+    reset(){
+      this.domainChange.name = null;
+      this.domainChange.ip = null;
     }
   }
 }

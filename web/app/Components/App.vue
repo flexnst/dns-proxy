@@ -49,7 +49,10 @@ export default {
         client_ip: null,
         domains: []
       },
-      domain: {},
+      domain: {
+        name: '',
+        ip: ''
+      },
       tab: 'domains',
       view: 'domain-list',
     }
@@ -82,6 +85,7 @@ export default {
     showList() {
       this.view = 'domain-list';
       this.loadConfig();
+      this.domain = { name: '', ip: '' };
     },
     edit(domain) {
       this.view = 'domain-edit';
